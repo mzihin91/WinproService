@@ -9,7 +9,7 @@ import App from './App';
 //   document.getElementById('app'),
 // );
 
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+const root = ReactDOM.createRoot(document.getElementById('app') as HTMLElement);
 root.render(
   <React.StrictMode>
     <App />
