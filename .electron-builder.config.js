@@ -12,6 +12,8 @@ module.exports = async function () {
   const {getVersion} = await import('./version/getVersion.mjs');
 
   return {
+    appId: 'elid',
+    productName: 'Winpro Service',
     directories: {
       output: 'dist',
       buildResources: 'buildResources',
@@ -24,6 +26,12 @@ module.exports = async function () {
     // Specify linux target just for disabling snap compilation
     linux: {
       target: 'deb',
+    },
+    win: {
+      target: 'msi',
+    },
+    msi: {
+      oneClick: false,
     },
   };
 };
