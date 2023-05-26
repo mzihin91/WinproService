@@ -1,5 +1,7 @@
+import Dashboard from './Dashboard';
+
 //sample code for testing
 const App = () => {
-  return <p>hello from react!!</p>;
+  return <Dashboard />;
 };
 export default App;
