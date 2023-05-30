@@ -17,7 +17,7 @@ type Inputs = {
   directory: string;
 };
 
-export default function AddServerModal({addServer}: any) {
+export default function AddServerModal({addServer, updateTable}: any) {
   const [open, setOpen] = React.useState(false);
 
   const {
@@ -26,9 +26,10 @@ export default function AddServerModal({addServer}: any) {
     formState: {errors},
   } = useForm<Inputs>();
 
-  const onSubmit: SubmitHandler<Inputs> = data => {
-    console.log(data);
-    addServer(data);
+  const onSubmit: SubmitHandler<Inputs> = async data => {
+    await addServer(data);
+    updateTable();
+    handleClose();
   };
 
   const handleClickOpen = () => {

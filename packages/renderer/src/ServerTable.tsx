@@ -23,7 +23,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import {visuallyHidden} from '@mui/utils';
 import Button from '@mui/material/Button';
 import AddServerModal from './AddServerModal';
-import {getServers} from '#preload';
+import {getServers, addReplaceServer, removeServers} from '#preload';
 
 // import Title from './Title';
 
@@ -188,14 +188,22 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
 interface EnhancedTableToolbarProps {
   numSelected: number;
+  updateTable: () => void;
+  selectedRow: readonly number[];
 }
 
-const addServer = (data: Data) => {
-  console.log(data);
+const addServer = async (data: Data) => {
+  const stringData = `'${data.name}', '${data.ipAddress}', false, '${data.directory}'`;
+  await addReplaceServer(stringData);
 };
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-  const {numSelected} = props;
+  const {numSelected, updateTable, selectedRow} = props;
+
+  const handleDelete = async () => {
+    await removeServers(selectedRow);
+    updateTable();
+  };
 
   return (
     <Toolbar
@@ -230,12 +238,15 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
       )}
       {numSelected > 0 ? (
         <Tooltip title="Delete">
-          <IconButton>
+          <IconButton onClick={handleDelete}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
       ) : (
-        <AddServerModal addServer={addServer} />
+        <AddServerModal
+          addServer={addServer}
+          updateTable={updateTable}
+        />
       )}
     </Toolbar>
   );
@@ -244,19 +255,23 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 export default function ServerTable() {
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Data>('ipAddress');
-  const [selected, setSelected] = React.useState<readonly string[]>([]);
+  const [selected, setSelected] = React.useState<readonly number[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [rows, setRows] = React.useState<Data[]>([]);
 
   React.useEffect(() => {
+    updateTable();
+  }, []);
+
+  const updateTable = () => {
     const servers = getServers();
     servers.then(res => {
-      console.log(res);
       setRows(res);
+      setSelected([]);
     });
-  }, []);
+  };
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof Data) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -266,19 +281,19 @@ export default function ServerTable() {
 
   const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = rows.map(n => n.name);
+      const newSelected = rows.map(n => n.id);
       setSelected(newSelected);
       return;
     }
     setSelected([]);
   };
 
-  const handleClick = (event: React.MouseEvent<unknown>, name: string) => {
-    const selectedIndex = selected.indexOf(name);
-    let newSelected: readonly string[] = [];
+  const handleClick = (event: React.MouseEvent<unknown>, id: number) => {
+    const selectedIndex = selected.indexOf(id);
+    let newSelected: readonly number[] = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
+      newSelected = newSelected.concat(selected, id);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -306,7 +321,7 @@ export default function ServerTable() {
     setDense(event.target.checked);
   };
 
-  const isSelected = (name: string) => selected.indexOf(name) !== -1;
+  const isSelected = (id: number) => selected.indexOf(id) !== -1;
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
@@ -314,7 +329,11 @@ export default function ServerTable() {
   return (
     <Box sx={{width: '100%'}}>
       <Paper sx={{width: '100%', mb: 2}}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar
+          numSelected={selected.length}
+          updateTable={updateTable}
+          selectedRow={selected}
+        />
         <TableContainer>
           <Table
             sx={{minWidth: 750}}
@@ -336,17 +355,17 @@ export default function ServerTable() {
                 .sort(getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const isItemSelected = isSelected(row.name);
+                  const isItemSelected = isSelected(row.id);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
                     <TableRow
                       hover
-                      onClick={event => handleClick(event, row.name)}
+                      onClick={event => handleClick(event, row.id)}
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
-                      key={row.name}
+                      key={row.id}
                       selected={isItemSelected}
                     >
                       <TableCell padding="checkbox">

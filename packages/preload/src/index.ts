@@ -4,4 +4,4 @@
 
 export {sha256sum} from './nodeCrypto';
 export {versions} from './versions';
-export {getServers} from './database';
+export {getServers, addReplaceServer, removeServers} from './database';
