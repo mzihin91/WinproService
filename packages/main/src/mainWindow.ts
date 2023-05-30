@@ -23,6 +23,26 @@ async function createWindow() {
     });
   });
 
+  ipcMain.handle('db-prepare', async (event, sqlQuery, index) => {
+    return new Promise((res, rej) => {
+      const prepare_statement = db.prepare(sqlQuery);
+      let progress = 0;
+      db.serialize(() => {
+        index.forEach((element: number) => {
+          prepare_statement.run([element], (err: Error, rows: unknown) => {
+            if (err) rej(err);
+            else {
+              progress++;
+              if (progress === index.length) {
+                res(rows);
+              }
+            }
+          });
+        });
+      });
+    });
+  });
+
   /**
    * If the 'show' property of the BrowserWindow's constructor is omitted from the initialization options,
    * it then defaults to 'true'. This can cause flickering as the window loads the html content,
