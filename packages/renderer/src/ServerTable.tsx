@@ -23,6 +23,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import {visuallyHidden} from '@mui/utils';
 import Button from '@mui/material/Button';
 import AddServerModal from './AddServerModal';
+import {getServers} from '#preload';
 
 // import Title from './Title';
 
@@ -34,26 +35,26 @@ interface Data {
   directory: string;
 }
 
-function createData(
-  id: number,
-  name: string,
-  ipAddress: string,
-  action: boolean,
-  directory: string,
-): Data {
-  return {
-    id,
-    name,
-    ipAddress,
-    action,
-    directory,
-  };
-}
+// function createData(
+//   id: number,
+//   name: string,
+//   ipAddress: string,
+//   action: boolean,
+//   directory: string,
+// ): Data {
+//   return {
+//     id,
+//     name,
+//     ipAddress,
+//     action,
+//     directory,
+//   };
+// }
 
-const rows = [
-  createData(1, 'Server A', '128.100.77.01', true, 'asd'),
-  createData(2, 'Server B', '128.100.77.01', false, 'zxc'),
-];
+// const rows = [
+//   createData(1, 'Server A', '128.100.77.01', true, 'asd'),
+//   createData(2, 'Server B', '128.100.77.01', false, 'zxc'),
+// ];
 
 function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
   if (b[orderBy] < a[orderBy]) {
@@ -189,8 +190,8 @@ interface EnhancedTableToolbarProps {
   numSelected: number;
 }
 
-const addServer = () => {
-  console.log('added');
+const addServer = (data: Data) => {
+  console.log(data);
 };
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
@@ -240,13 +241,22 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
   );
 }
 
-export default function EnhancedTable() {
+export default function ServerTable() {
   const [order, setOrder] = React.useState<Order>('asc');
   const [orderBy, setOrderBy] = React.useState<keyof Data>('ipAddress');
   const [selected, setSelected] = React.useState<readonly string[]>([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rows, setRows] = React.useState<Data[]>([]);
+
+  React.useEffect(() => {
+    const servers = getServers();
+    servers.then(res => {
+      console.log(res);
+      setRows(res);
+    });
+  }, []);
 
   const handleRequestSort = (event: React.MouseEvent<unknown>, property: keyof Data) => {
     const isAsc = orderBy === property && order === 'asc';
