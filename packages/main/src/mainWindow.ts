@@ -1,4 +1,5 @@
 import {app, BrowserWindow, ipcMain} from 'electron';
+import {execFile} from 'node:child_process';
 import {join, resolve} from 'node:path';
 import db from './database';
 
@@ -40,6 +41,32 @@ async function createWindow() {
           });
         });
       });
+    });
+  });
+
+  ipcMain.handle('spawnChild', async (event, fileName, params) => {
+    console.log(join(__dirname, fileName));
+    console.log(params);
+
+    return new Promise((resolve, reject) => {
+      try {
+        execFile(join(__dirname, fileName), params, (err: any, stdout: any, stderr: any) => {
+          if (err) {
+            console.error(`exec error: ${err}`);
+            reject(err);
+          }
+
+          if (stderr) {
+            console.log(stderr);
+            reject(stderr);
+          }
+
+          resolve('success');
+        });
+      } catch (error) {
+        console.error(error);
+        reject(error);
+      }
     });
   });
 

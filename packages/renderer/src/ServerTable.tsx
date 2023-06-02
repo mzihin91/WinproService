@@ -19,11 +19,16 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
+import StartIcon from '@mui/icons-material/PlayCircle';
+import StopIcon from '@mui/icons-material/StopCircle';
 // import FilterListIcon from '@mui/icons-material/FilterList';
 import {visuallyHidden} from '@mui/utils';
 import Button from '@mui/material/Button';
 import AddServerModal from './AddServerModal';
-import {getServers, addReplaceServer, removeServers} from '#preload';
+import {getServers, addReplaceServer, removeServers, startWinpro, stopWinpro} from '#preload';
+import CircularProgress from '@mui/material/CircularProgress';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 // import Title from './Title';
 
@@ -33,6 +38,7 @@ interface Data {
   ipAddress: string;
   action: boolean;
   directory: string;
+  isLoading: boolean;
 }
 
 // function createData(
@@ -260,6 +266,9 @@ export default function ServerTable() {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [rows, setRows] = React.useState<Data[]>([]);
+  const [openSuccessToast, setOpenSuccessToast] = React.useState(false);
+  const [openErrorToast, setOpenErrorToast] = React.useState(false);
+  const [toastMessage, setToastMessage] = React.useState('');
 
   React.useEffect(() => {
     updateTable();
@@ -268,6 +277,7 @@ export default function ServerTable() {
   const updateTable = () => {
     const servers = getServers();
     servers.then(res => {
+      res.map((obj: Data) => ({...obj, isLoading: false}));
       setRows(res);
       setSelected([]);
     });
@@ -325,6 +335,22 @@ export default function ServerTable() {
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+
+  const handleSuccessToastClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenSuccessToast(false);
+  };
+
+  const handleErrorToastClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenErrorToast(false);
+  };
 
   return (
     <Box sx={{width: '100%'}}>
@@ -387,17 +413,120 @@ export default function ServerTable() {
                       </TableCell>
                       <TableCell align="left">{row.ipAddress}</TableCell>
                       <TableCell align="left">
-                        <Button
+                        {row.isLoading ? (
+                          <CircularProgress />
+                        ) : (
+                          <>
+                            <Tooltip title="Stop Winpro">
+                              <IconButton
+                                sx={{mr: 2}}
+                                color="error"
+                                onClick={async () => {
+                                  console.log('stop');
+                                  setRows(prevState => {
+                                    return prevState.map(item => {
+                                      // Check for the item with the specified id and update it
+                                      return item.id === row.id
+                                        ? {...item, isLoading: !item.isLoading}
+                                        : item;
+                                    });
+                                  });
+                                  try {
+                                    const res = await stopWinpro(row.ipAddress);
+                                    console.log(res);
+
+                                    if (res === 'success') {
+                                      setToastMessage('Winpro closed successfully.');
+                                      setOpenSuccessToast(true);
+                                    } else {
+                                      setToastMessage('Failed to close Winpro.');
+                                      setOpenErrorToast(true);
+                                    }
+                                  } catch (error) {
+                                    setToastMessage('Failed to close Winpro.');
+                                    setOpenErrorToast(true);
+                                  }
+
+                                  setRows(prevState => {
+                                    return prevState.map(item => {
+                                      // Check for the item with the specified id and update it
+                                      return item.id === row.id
+                                        ? {...item, isLoading: !item.isLoading}
+                                        : item;
+                                    });
+                                  });
+                                }}
+                              >
+                                <StopIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Start Winpro">
+                              <IconButton
+                                color="success"
+                                onClick={async () => {
+                                  console.log('start', index);
+                                  setRows(prevState => {
+                                    return prevState.map(item => {
+                                      // Check for the item with the specified id and update it
+                                      return item.id === row.id
+                                        ? {...item, isLoading: !item.isLoading}
+                                        : item;
+                                    });
+                                  });
+                                  try {
+                                    const res = await startWinpro(row.ipAddress, row.directory);
+                                    console.log(res);
+                                    if (res === 'success') {
+                                      setToastMessage('Winpro opened successfully.');
+                                      setOpenSuccessToast(true);
+                                    } else {
+                                      setToastMessage('Failed to open Winpro.');
+                                      setOpenErrorToast(true);
+                                    }
+                                  } catch (error) {
+                                    console.log(error);
+                                    setToastMessage('Failed to open Winpro.');
+                                    setOpenErrorToast(true);
+                                  }
+
+                                  setRows(prevState => {
+                                    return prevState.map(item => {
+                                      // Check for the item with the specified id and update it
+                                      return item.id === row.id
+                                        ? {...item, isLoading: !item.isLoading}
+                                        : item;
+                                    });
+                                  });
+                                }}
+                              >
+                                <StartIcon />
+                              </IconButton>
+                            </Tooltip>
+                          </>
+                        )}
+                        {/* <Button
+                          sx={{mr: 2}}
                           style={{minWidth: '80px'}}
                           variant="contained"
-                          color={row.action ? 'success' : 'error'}
+                          color={'error'}
                           onClick={() => {
                             // handleChangeConnect(row.id);
                             console.log(row.directory);
                           }}
                         >
-                          {row.action ? 'start' : 'stop'}
+                          {'stop'}
                         </Button>
+                        <Button
+                          style={{minWidth: '80px'}}
+                          variant="contained"
+                          color={'success'}
+                          onClick={() => {
+                            // handleChangeConnect(row.id);
+                            console.log(row.directory);
+                          }}
+                        >
+                          {'start'}
+                        </Button> */}
                       </TableCell>
                       <TableCell align="left">
                         <Tooltip
@@ -443,6 +572,32 @@ export default function ServerTable() {
         }
         label="Dense padding"
       />
+      <Snackbar
+        open={openSuccessToast}
+        autoHideDuration={6000}
+        onClose={handleSuccessToastClose}
+      >
+        <Alert
+          onClose={handleSuccessToastClose}
+          severity="success"
+          sx={{width: '100%'}}
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={openErrorToast}
+        autoHideDuration={6000}
+        onClose={handleErrorToastClose}
+      >
+        <Alert
+          onClose={handleErrorToastClose}
+          severity="error"
+          sx={{width: '100%'}}
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -34,7 +34,7 @@ const config = {
         entryFileNames: '[name].cjs',
       },
     },
-    emptyOutDir: true,
+    emptyOutDir: false,
     reportCompressedSize: false,
   },
   plugins: [injectAppVersion()],
