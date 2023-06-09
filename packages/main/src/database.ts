@@ -5,7 +5,7 @@ console.log('creating table...');
 db.serialize(() => {
   db.run(
     // 'CREATE TABLE IF NOT EXISTS Servers (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(200) NOT NULL, ipAddress VARCHAR(200) NOT NULL, status BOOLEAN NOT NULL, directory TEXT NOT NULL)',
-    'CREATE TABLE IF NOT EXISTS Servers (name VARCHAR(200) NOT NULL, ipAddress VARCHAR(200) NOT NULL, status BOOLEAN NOT NULL, directory TEXT NOT NULL)',
+    'CREATE TABLE IF NOT EXISTS Servers (name VARCHAR(200) NOT NULL, ipAddress VARCHAR(200) NOT NULL, status BOOLEAN NOT NULL, directory TEXT NOT NULL, username TEXT NOT NULL, password TEXT NOT NULL)',
   );
   // db.run('INSERT INTO Servers VALUES (name, ipAddress, status, directory)', [
   //   'Server A',

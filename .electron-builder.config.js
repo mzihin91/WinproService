@@ -28,10 +28,12 @@ module.exports = async function () {
       target: 'deb',
     },
     win: {
-      target: 'msi',
+      target: 'nsis',
     },
-    msi: {
+    nsis: {
       oneClick: false,
+      runAfterFinish: false,
+      allowToChangeInstallationDirectory: true,
     },
   };
 };

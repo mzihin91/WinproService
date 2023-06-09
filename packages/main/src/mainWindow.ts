@@ -61,7 +61,8 @@ async function createWindow() {
             reject(stderr);
           }
 
-          resolve('success');
+          console.log(stdout);
+          resolve(stdout);
         });
       } catch (error) {
         console.error(error);

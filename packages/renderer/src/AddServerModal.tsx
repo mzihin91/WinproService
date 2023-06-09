@@ -14,6 +14,8 @@ import {useForm} from 'react-hook-form';
 type Inputs = {
   name: string;
   ipAddress: string;
+  username: string;
+  password: string;
   directory: string;
 };
 
@@ -76,7 +78,7 @@ export default function AddServerModal({addServer, updateTable}: any) {
               type="text"
               fullWidth
               variant="standard"
-              defaultValue=""
+              defaultValue="Server 1"
               {...register('name', {required: true})}
             />
             {errors.name && <span>This field is required</span>}
@@ -98,12 +100,36 @@ export default function AddServerModal({addServer, updateTable}: any) {
 
             <TextField
               margin="dense"
+              id="username"
+              label="Username"
+              type="text"
+              fullWidth
+              variant="standard"
+              defaultValue="elid"
+              {...register('username', {required: true})}
+            />
+            {errors.username && <span>This field is required</span>}
+
+            <TextField
+              margin="dense"
+              id="password"
+              label="Pasword"
+              type="text"
+              fullWidth
+              variant="standard"
+              defaultValue="elid"
+              {...register('password', {required: true})}
+            />
+            {errors.password && <span>This field is required</span>}
+
+            <TextField
+              margin="dense"
               id="directory"
               label="Directory"
               type="text"
               fullWidth
               variant="standard"
-              defaultValue=""
+              defaultValue="C:\Program Files (x86)\WinPro\Server\WPSvr.exe"
               {...register('directory', {required: true})}
             />
             {errors.directory && <span>This field is required</span>}

@@ -17,7 +17,7 @@ export function getServers() {
 
 export function addReplaceServer(data: string) {
   return query(
-    `INSERT OR REPLACE INTO Servers (name, ipAddress, status, directory) VALUES (${data})`,
+    `INSERT OR REPLACE INTO Servers (name, ipAddress, status, directory, username, password) VALUES (${data})`,
   );
 }
 

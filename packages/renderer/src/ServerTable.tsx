@@ -23,7 +23,6 @@ import StartIcon from '@mui/icons-material/PlayCircle';
 import StopIcon from '@mui/icons-material/StopCircle';
 // import FilterListIcon from '@mui/icons-material/FilterList';
 import {visuallyHidden} from '@mui/utils';
-import Button from '@mui/material/Button';
 import AddServerModal from './AddServerModal';
 import {getServers, addReplaceServer, removeServers, startWinpro, stopWinpro} from '#preload';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -38,6 +37,8 @@ interface Data {
   ipAddress: string;
   action: boolean;
   directory: string;
+  username: string;
+  password: string;
   isLoading: boolean;
 }
 
@@ -199,7 +200,7 @@ interface EnhancedTableToolbarProps {
 }
 
 const addServer = async (data: Data) => {
-  const stringData = `'${data.name}', '${data.ipAddress}', false, '${data.directory}'`;
+  const stringData = `'${data.name}', '${data.ipAddress}', false, '${data.directory}', '${data.username}', '${data.password}'`;
   await addReplaceServer(stringData);
 };
 
@@ -432,18 +433,18 @@ export default function ServerTable() {
                                     });
                                   });
                                   try {
-                                    const res = await stopWinpro(row.ipAddress);
+                                    const res = await stopWinpro(row.ipAddress, row.password);
                                     console.log(res);
 
                                     if (res === 'success') {
                                       setToastMessage('Winpro closed successfully.');
                                       setOpenSuccessToast(true);
                                     } else {
-                                      setToastMessage('Failed to close Winpro.');
+                                      setToastMessage('Failed to close Winpro: ' + res);
                                       setOpenErrorToast(true);
                                     }
                                   } catch (error) {
-                                    setToastMessage('Failed to close Winpro.');
+                                    setToastMessage('Failed to close Winpro: ' + error);
                                     setOpenErrorToast(true);
                                   }
 
@@ -474,18 +475,23 @@ export default function ServerTable() {
                                     });
                                   });
                                   try {
-                                    const res = await startWinpro(row.ipAddress, row.directory);
+                                    const res = await startWinpro(
+                                      row.ipAddress,
+                                      row.username,
+                                      row.password,
+                                      row.directory,
+                                    );
                                     console.log(res);
                                     if (res === 'success') {
                                       setToastMessage('Winpro opened successfully.');
                                       setOpenSuccessToast(true);
                                     } else {
-                                      setToastMessage('Failed to open Winpro.');
+                                      setToastMessage('Failed to open Winpro: ' + res);
                                       setOpenErrorToast(true);
                                     }
                                   } catch (error) {
                                     console.log(error);
-                                    setToastMessage('Failed to open Winpro.');
+                                    setToastMessage('Failed to open Winpro: ' + error);
                                     setOpenErrorToast(true);
                                   }
 
